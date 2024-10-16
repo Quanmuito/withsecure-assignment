@@ -1,0 +1,11 @@
+services:
+  preprocess-component:
+    container_name: preprocess-component
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: host
+    environment:
+      ENDPOINT_URL: http://localhost:4566
+      AWS_ACCESS_KEY_ID: some_key_id
+      AWS_SECRET_ACCESS_KEY: some_secret
