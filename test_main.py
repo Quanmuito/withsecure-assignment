@@ -79,10 +79,12 @@ MESSAGE = {
 }
 
 class TestMain(unittest.TestCase):
+
     def test_is_valid_submission(self):
         self.assertTrue(main.is_valid_submission(VALID_SUBMISSION))
         self.assertFalse(main.is_valid_submission(SUBMISSION_NO_ID))
         self.assertFalse(main.is_valid_submission(SUBMISSION_NO_DEVICE_ID))
+
 
     def test_is_valid_event(self):
         self.assertTrue(main.is_valid_event(VALID_NEW_PROCESS_EVENT, main.NEW_PROCESS_EVENT))
@@ -90,18 +92,21 @@ class TestMain(unittest.TestCase):
         self.assertFalse(main.is_valid_event(INVALID_NEW_PROCESS_EVENT, main.NEW_PROCESS_EVENT))
         self.assertFalse(main.is_valid_event(INVALID_NETWORK_CONNECTION_EVENT, main.NETWORK_CONNECTION_EVENT))
 
+
     def test_decode(self):
         self.assertEqual(main.decode('InRlc3Qgc3RyaW5nIg=='), 'test string')
         self.assertEqual(main.decode('eyJjbWRsIjogIm5vdGVwYWQuZXhlIiwgInVzZXIiOiAiZXZpbC1ndXkifQ=='), {'cmdl': 'notepad.exe', 'user': 'evil-guy'})
+
 
     def test_encode(self):
         self.assertEqual(main.encode('test string'), 'InRlc3Qgc3RyaW5nIg==')
         self.assertEqual(main.encode({'cmdl': 'notepad.exe', 'user': 'evil-guy'}), 'eyJjbWRsIjogIm5vdGVwYWQuZXhlIiwgInVzZXIiOiAiZXZpbC1ndXkifQ==')
 
+
     def test_get_records(self):
         records = main.get_records(MESSAGE)
         for record in records:
-            self.assertEqual(record['PartitionKey'], MESSAGE['MD5OfBody'])
+            self.assertEqual(record['PartitionKey'], MESSAGE['MessageId'])
             event = main.decode(record['Data'])
             self.assertIsNotNone(event['type'])
             self.assertIsNotNone(event['event_id'])

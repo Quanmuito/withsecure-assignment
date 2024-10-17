@@ -34,6 +34,9 @@ def sqs_receive_messages(
     max_number_of_messages=MAX_NUMBER_OF_MESSAGES,
     visibility_timeout=VISIBILITY_TIMEOUT
 ):
+    """
+    Read messages from SQS queue
+    """
     try:
         response = client.receive_message(
             QueueUrl=queue_url,
@@ -42,24 +45,28 @@ def sqs_receive_messages(
         )
         return response.get('Messages', [])
 
-    except (EndpointConnectionError, ClientError) as e:
-        print(f"Error: {e}")
+    except (EndpointConnectionError, ClientError):
         pass
 
 
 def sqs_delete_message(client, queue_url, receipt_handle):
+    """
+    Delete messages from SQS queue
+    """
     try:
         client.delete_message(
             QueueUrl=queue_url,
             ReceiptHandle=receipt_handle
         )
 
-    except (EndpointConnectionError, ClientError) as e:
-        print(f"Error: {e}")
+    except (EndpointConnectionError, ClientError):
         pass
 
 
 def kinesis_put_records(client, records, stream_name):
+    """
+    Publish record to kinesis stream
+    """
     try:
         response = client.put_records(
             Records=records,
@@ -67,16 +74,21 @@ def kinesis_put_records(client, records, stream_name):
         )
         print(f"FailedRecordCount: {response['FailedRecordCount']}")
 
-    except (EndpointConnectionError, ClientError) as e:
-        print(f"Error: {e}")
+    except (EndpointConnectionError, ClientError):
         pass
 
 
 def is_valid_submission(submission):
+    """
+    Validate submission
+    """
     return submission['submission_id'] != INVALID_UUID and submission['device_id'] != INVALID_UUID
 
 
 def is_valid_event(event, type):
+    """
+    Validate event
+    """
     if type == NEW_PROCESS_EVENT:
         return event['cmdl'] != INVALID_CMDL
 
@@ -88,20 +100,32 @@ def is_valid_event(event, type):
 
 
 def decode(code):
+    """
+    Decode the Base64 encoded bytes data to object
+    """
     decoded_message = base64.b64decode(code)
     return json.loads(decoded_message.decode())
 
 
 def encode(message):
+    """
+    Encode data to Base64 bytes
+    """
     encoded_message = json.dumps(message).encode()
     return base64.b64encode(encoded_message).decode()
 
 
 def get_records(message):
+    """
+    Get a list of records
+    """
     submission = decode(message['Body'])
     records = []
 
     def add_records(type):
+        """
+        Format event to record
+        """
         for event in submission['events'][type]:
             if is_valid_event(event, type):
                 event['type'] = type
@@ -109,7 +133,7 @@ def get_records(message):
                 event['device_id'] = submission['device_id']
                 event['time_created'] = datetime.now().isoformat()
                 record = {
-                    'PartitionKey': message['MD5OfBody'],
+                    'PartitionKey': message['MessageId'],
                     'Data': encode(event)
                 }
                 records.append(record)
@@ -167,6 +191,7 @@ def main(queue_name=QUEUE_NAME, stream_name=STREAM_NAME):
 
         else:
             print('No messages received')
+
         time.sleep(INTERVAL)
 
 

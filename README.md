@@ -147,6 +147,16 @@ $ docker-compose exec localstack aws --endpoint-url=http://localhost:4566 kinesi
 
 Should you have any problems with the environment or the service, you can fully reset it by executing `docker-compose down` and then `docker-compose up -d`.
 
+#### Notes: Kinesis should not have any record published before this application is turned on. You can try to reset both environment and this application, but before turning this on, try to run those commands once, you should get the result similar to this:
+```console
+{
+    "Records": [],
+    "NextShardIterator": "AAAAAAAAAAG24ytHM59F0D+4vVrlbxR86Hc9QyrFe6Oc8BOug6KL9o1gQe8DZy5ZTctvxpGrOEarjf7M3+d/XO0yOma76Wiifp/8UYrOioN3fl43N7sdt2XMtrtesp4gQwUfePM0qPO42dW51brVjOoug4vp4rtO+848yp9Y/8Zu4ihtAtLpG7C9cOPIq76Y04/2m6sow3Q=",
+    "MillisBehindLatest": 0,
+    "ChildShards": []
+}
+```
+
 ### Data format
 
 new_process event data follow this JSON format:
