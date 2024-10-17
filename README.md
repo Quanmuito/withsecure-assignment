@@ -1,11 +1,12 @@
 # Withsecure assignment submission
 
 ## Description
+
 This is a simple preprocessing for an EDR backend that processes telementry submissions from sensors to SQS and publishes data to Kinesis stream.
 
 ### Main functions
 
-* Every 30 seconds, the component reads messages from SQS queue, formats data and publishes events to Kinesis stream.
+* Every 30 seconds, the service reads messages from SQS queue, formats data and publishes events to Kinesis stream.
 * The read messages will be deleted after all events are published to Kinesis stream.
 
 ### Requirements
@@ -26,28 +27,32 @@ This is a simple preprocessing for an EDR backend that processes telementry subm
 * Q: How does your application scale and guarantee near-realtime processing when the incoming traffic increases?
 * A: My application can be scaled up by increase MAX_NUMBER_OF_MESSAGES to read more message at once and reducing the INTERVAL to make it processes submissions from SQS more frequent.
 
-* Where are the possible bottlenecks and how to tackle those?
+* Q: here are the possible bottlenecks and how to tackle those?
 * A: One possible bottlenecks would be 'receive_messages' method returns maximum 10 messages with or 'put_records' method support up to 500 records each request.
 * In order to solve this, I can set up more queue and more data stream, then set up the software to watch each queue and stream pair.
 
-* What kind of metrics you would collect from the application to get visibility to its througput, performance and health?
-* I would collect number of messages read and number of events published within a period of time to asset the throughput and performance of the software. In addition, I would collect the number of submissions from sensors to adjust the interval and solve possible bottlenecks.
+* Q: What kind of metrics you would collect from the application to get visibility to its througput, performance and health?
+* A: I would collect number of messages read and number of events published within a period of time to asset the throughput and performance of the software. In addition, I would collect the number of submissions from sensors to adjust the interval and solve possible bottlenecks.
 
 * Q: How would you deploy your application in a real world scenario?
 * A: In a real world scenario, I would depoy it as a microservice to format data from SQS before published to Kinesis to be analyzed.
 
 * Q: What kind of testing, deployment stages or quality gates you would build to ensure a safe production deployment?
-* A: I followed Single Responsibility Principle and write unit tests like 'test_main.py' file. In real world, I would set up some jobs to run those tests on a CI (for example with Github Actions).
+* A: I followed Single Responsibility Principle and write unit tests like 'test_main.py' file. I also set up a workflow with Github Actions, which will run that test file on every push to ensure every function works as expected.
 * I prefer 3 steps of testing before deploy to production.
     - 1st step - Development stage: The person that review the PR should test the application with his/her local environment.
     - 2nd step - Staging stage: The application should be deployed to an UAT server (a server that mimic production but for testing purpose) or a replicated server and let testers work on it.
     - 3rd step - Production stage: The application deployed to production environment.
 
 ## Setup
-### Prerequisite
+
+You will need to turn on the environment first, then start the service.
+
+### Running the environment
+
 Follow instruction to set up the environment that includes mock AWS with localstack and mock sensor-fleet.
 
-### Running the services
+### Running the service
 
 Once the environment is up, open a terminal at this folder and use command `docker-compose up -d`.
 
@@ -147,7 +152,7 @@ $ docker-compose exec localstack aws --endpoint-url=http://localhost:4566 kinesi
 
 Should you have any problems with the environment or the service, you can fully reset it by executing `docker-compose down` and then `docker-compose up -d`.
 
-#### Notes: Kinesis should not have any record published before this application is turned on. You can try to reset both environment and this application, but before turning this on, try to run those commands once, you should get the result similar to this:
+#### Notes: Kinesis should not have any record published before this service is turned on. You can try to reset both environment and this service, but before turning the service on, try to run those commands once, you should get the result similar to this:
 ```console
 {
     "Records": [],
