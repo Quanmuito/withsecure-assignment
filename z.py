@@ -108,6 +108,7 @@ def get_records(message):
                 event['event_id'] = str(uuid.uuid4())
                 event['device_id'] = submission['device_id']
                 event['time_created'] = datetime.now().isoformat()
+                print(event)
                 record = {
                     'PartitionKey': message['MD5OfBody'],
                     'Data': encode(event)
@@ -118,57 +119,12 @@ def get_records(message):
         add_records(NEW_PROCESS_EVENT)
         add_records(NETWORK_CONNECTION_EVENT)
 
-    return records
+    print(records)
 
-
-def main(queue_name=QUEUE_NAME, stream_name=STREAM_NAME):
-    print('Starting preprocessing component')
-
-    config = Config(
-        region_name = 'eu-west-1',
-        retries = {
-            'max_attempts': 3,
-            'mode': 'standard'
-        }
-    )
-
-    sqs_client = boto3.client(
-        'sqs',
-        config=config,
-        endpoint_url=ENDPOINT_URL,
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
-    )
-
-    kinesis_client = boto3.client(
-        'kinesis',
-        config=config,
-        endpoint_url=ENDPOINT_URL,
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
-    )
-
-    while True:
-        print('Processing messages...')
-        queue_url = sqs_client.get_queue_url(QueueName=queue_name)['QueueUrl']
-        messages = sqs_receive_messages(sqs_client, queue_url)
-
-        if messages:
-            for message in messages:
-                records = get_records(message)
-                kinesis_put_records(
-                    client=kinesis_client,
-                    records=records,
-                    stream_name=stream_name,
-                )
-
-                sqs_delete_message(sqs_client, queue_url, message['ReceiptHandle'])
-                print(f"Message {message['MessageId']} has been processed and removed!")
-
-        else:
-            print('No messages received')
-        time.sleep(INTERVAL)
-
-
-if __name__ == '__main__':
-    main()
+MESSAGE = {
+    'MessageId': '8bcc287b-0970-e8d4-001e-a5e6a7282efc',
+    'ReceiptHandle': 'evgIjUxZWJmNDI2LWRkZWUtNDg4NS1iYmYzLWE1ZWJiNWQ2MGVhMSIsICJkZXZpY2VfaWQiOiAiN2M4NWU1NzktMTQ3MS00N2Y2LWFhZTAtOGYyZWUwNzRhYzMxIiwgInRpbWVfY3JlYXRlch',
+    'Body': 'eyJzdWJtaXNzaW9uX2lkIjogIjUxZWJmNDI2LWRkZWUtNDg4NS1iYmYzLWE1ZWJiNWQ2MGVhMSIsICJkZXZpY2VfaWQiOiAiN2M4NWU1NzktMTQ3MS00N2Y2LWFhZTAtOGYyZWUwNzRhYzMxIiwgInRpbWVfY3JlYXRlZCI6ICIyMDI0LTEwLTE2VDE0OjUxOjA4LjkwOTQ3NyIsICJldmVudHMiOiB7Im5ld19wcm9jZXNzIjogW3siY21kbCI6ICJub3RlcGFkLmV4ZSIsICJ1c2VyIjogImpvaG4ifSwgeyJjbWRsIjogImNhbGN1bGF0b3IuZXhlIiwgInVzZXIiOiAiYWRtaW4ifV0sICJuZXR3b3JrX2Nvbm5lY3Rpb24iOiBbeyJzb3VyY2VfaXAiOiAiMTkyLjE2OC4wLjEiLCAiZGVzdGluYXRpb25faXAiOiAiMjMuMTMuMjUyLjM5IiwgImRlc3RpbmF0aW9uX3BvcnQiOiA1NTQxM30sIHsic291cmNlX2lwIjogIjE5Mi4xNjguMC4xIiwgImRlc3RpbmF0aW9uX2lwIjogIjIzLjEzLjI1Mi4zOSIsICJkZXN0aW5hdGlvbl9wb3J0IjogMTk2OTd9XX19',
+    'MD5OfBody': '4ca38114dc7ee7f7b5c2781170fd62da',
+}
+get_records(MESSAGE)
